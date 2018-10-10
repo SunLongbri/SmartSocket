@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_45"
+        android:background="@color/colorPrimary"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/tv_nearby_title"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:gravity="center_vertical"
+            android:textColor="@color/white"
+            android:paddingLeft="15dp"
+            android:text="Smart Socket"
+            android:textSize="16sp"
+            />
+
+        <TextView
+            android:id="@+id/tv_nearby_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:textColor="@color/white"
+            android:paddingLeft="10dp"
+            android:textSize="12sp"
+            android:text="total:0  on:0 off:0  error:0"/>
+
+        <Button
+            android:id="@+id/bt_ip"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="60dp"
+            android:background="@mipmap/ic_setting"
+            />
+
+
+    </LinearLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <ListView
+        android:id="@+id/lv_nearby"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+      >
+    </ListView>
+
+        <ProgressBar
+            android:id="@+id/pb_wait"
+            android:indeterminateTint="#7769"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:progressTint="@color/color_333333"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true" />
+    </RelativeLayout>
+
+</LinearLayout>

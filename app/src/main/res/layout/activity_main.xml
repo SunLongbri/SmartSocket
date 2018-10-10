@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!--标题栏：两个Fragment切换的菜单-->
+    <RadioGroup
+        android:id="@+id/rg_head"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <RadioButton
+            android:id="@+id/rb_tab1"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:background="@drawable/btn_bg_left"
+            android:button="@null"
+            android:checked="true"
+            android:gravity="center"
+            android:text="NearBy"
+            android:textColor="@color/tab_text_color"
+            android:textSize="16sp" />
+
+        <RadioButton
+            android:id="@+id/rb_tab2"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:background="@drawable/btn_bg_right"
+            android:button="@null"
+            android:gravity="center"
+            android:text="My Devices"
+            android:textColor="@color/tab_text_color"
+            android:textSize="16sp" />
+    </RadioGroup>
+
+
+        <!--标题栏下面可以切换两个Fragment的页面-->
+        <android.support.v4.view.ViewPager
+            android:id="@+id/vp_home"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"></android.support.v4.view.ViewPager>
+
+
+
+
+</LinearLayout>
