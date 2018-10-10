@@ -1,4 +1,4 @@
-package com.shoneworn.smartplug.View.service;
+package com.shoneworn.smartplug.service;
 
 import android.app.Service;
 import android.content.Intent;
@@ -6,11 +6,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import com.shoneworn.smartplug.View.activity.DetailActivity;
-import com.shoneworn.smartplug.data.DetailInfo;
+import com.shoneworn.smartplug.activity.DetailActivity;
+import com.shoneworn.smartplug.bean.DetailInfo;
 import com.shoneworn.smartplug.network.TcpClientConnector;
-import com.shoneworn.smartplug.utils.ReceiveCommand;
-import com.shoneworn.smartplug.utils.SendCommand;
+import com.shoneworn.smartplug.command.SendCommand;
 
 
 /**

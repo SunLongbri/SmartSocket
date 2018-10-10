@@ -1,6 +1,8 @@
-package com.shoneworn.smartplug.utils;
+package com.shoneworn.smartplug.command;
 
-import com.shoneworn.smartplug.data.CommandInfo;
+import com.shoneworn.smartplug.bean.CommandInfo;
+import com.shoneworn.smartplug.command.CombineCommand;
+import com.shoneworn.smartplug.command.SendCommand;
 import com.shoneworn.smartplug.network.TcpClientConnector;
 
 

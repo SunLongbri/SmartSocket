@@ -1,6 +1,4 @@
-package com.shoneworn.smartplug.interfaces;
-
-import com.shoneworn.smartplug.bean.DetailTextView;
+package com.shoneworn.smartplug.update;
 
 /**
  * =============================================================
@@ -10,7 +8,7 @@ import com.shoneworn.smartplug.bean.DetailTextView;
  * Author      : Heaven
  * <p/>
  * Version     : 1.0
- * Date of creation : 2018/9/9 20:12.
+ * Date of creation : 2018/10/10 16:12.
  * <p/>
  * Description  :
  * <p/>
@@ -19,8 +17,5 @@ import com.shoneworn.smartplug.bean.DetailTextView;
  * <p/>
  * =============================================================
  */
-public interface DetailTextviewInterface {
-
-    void detailTextView(DetailTextView detailTextView);
-
+public class UpdateListItem {
 }

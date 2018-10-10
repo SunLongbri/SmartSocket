@@ -1,9 +1,8 @@
-package com.shoneworn.smartplug.View.activity;
+package com.shoneworn.smartplug.activity;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -16,17 +15,16 @@ import com.ailin.shoneworn.mylibrary.NotifyMsgEntity;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.shoneworn.smartplug.R;
-import com.shoneworn.smartplug.View.service.TimerService;
-import com.shoneworn.smartplug.data.CommandInfo;
-import com.shoneworn.smartplug.data.DetailInfo;
-import com.shoneworn.smartplug.data.DetailTextView;
-import com.shoneworn.smartplug.data.DeviceBean;
+import com.shoneworn.smartplug.service.TimerService;
+import com.shoneworn.smartplug.bean.CommandInfo;
+import com.shoneworn.smartplug.bean.DetailInfo;
+import com.shoneworn.smartplug.bean.DetailTextView;
+import com.shoneworn.smartplug.bean.DeviceBean;
 import com.shoneworn.smartplug.utils.Constants;
-import com.shoneworn.smartplug.utils.ReceiveCommand;
-import com.shoneworn.smartplug.utils.SendCommand;
-import com.shoneworn.smartplug.utils.UpdateAllData;
+import com.shoneworn.smartplug.command.ReceiveCommand;
+import com.shoneworn.smartplug.command.SendCommand;
+import com.shoneworn.smartplug.update.UpdateAllData;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Observable;

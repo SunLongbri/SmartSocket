@@ -1,11 +1,9 @@
-package com.shoneworn.smartplug;
+package com.shoneworn.smartplug.application;
 
 import android.app.Application;
 import android.content.Context;
 
 import com.ailin.shoneworn.mylibrary.SuperObserver;
-import com.shoneworn.smartplug.network.TcpClientConnector;
-import com.shoneworn.smartplug.utils.Constants;
 
 /**
  * Created by admin on 2018/8/30.

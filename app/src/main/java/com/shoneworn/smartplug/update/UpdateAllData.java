@@ -1,21 +1,22 @@
-package com.shoneworn.smartplug.utils;
+package com.shoneworn.smartplug.update;
 
 import android.widget.ImageView;
 
 import com.ailin.shoneworn.mylibrary.NotifyManager;
 import com.ailin.shoneworn.mylibrary.NotifyMsgEntity;
 import com.shoneworn.smartplug.adapter.CommonListAdapter;
-import com.shoneworn.smartplug.data.DetailInfo;
-import com.shoneworn.smartplug.data.DetailTextView;
-import com.shoneworn.smartplug.data.DeviceBean;
+import com.shoneworn.smartplug.bean.DetailInfo;
+import com.shoneworn.smartplug.bean.DetailTextView;
+import com.shoneworn.smartplug.bean.DeviceBean;
 import com.shoneworn.smartplug.interfaces.DetailTextviewInterface;
 import com.shoneworn.smartplug.interfaces.UpdateData;
+import com.shoneworn.smartplug.utils.Constants;
 
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import static com.shoneworn.smartplug.View.fragment.NearbyFragment.getMlist;
+import static com.shoneworn.smartplug.fragment.NearbyFragment.getMlist;
 /**
  * =============================================================
  * <p/>

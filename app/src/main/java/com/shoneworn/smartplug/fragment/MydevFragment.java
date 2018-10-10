@@ -1,4 +1,4 @@
-package com.shoneworn.smartplug.View.fragment;
+package com.shoneworn.smartplug.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

@@ -1,4 +1,4 @@
-package com.shoneworn.smartplug.View.activity;
+package com.shoneworn.smartplug.activity;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,7 +12,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.shoneworn.smartplug.BaseApplication;
 import com.shoneworn.smartplug.R;
 import com.shoneworn.smartplug.utils.Constants;
 

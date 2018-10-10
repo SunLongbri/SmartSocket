@@ -1,18 +1,15 @@
-package com.shoneworn.smartplug.View.fragment;
+package com.shoneworn.smartplug.fragment;
 
 import android.app.AlertDialog;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -30,19 +27,21 @@ import android.widget.Toast;
 import com.ailin.shoneworn.mylibrary.NotifyManager;
 import com.ailin.shoneworn.mylibrary.NotifyMsgEntity;
 import com.shoneworn.smartplug.R;
-import com.shoneworn.smartplug.View.activity.DetailActivity;
+import com.shoneworn.smartplug.activity.DetailActivity;
 import com.shoneworn.smartplug.adapter.CommonListAdapter;
-import com.shoneworn.smartplug.data.CDABInfo;
-import com.shoneworn.smartplug.data.CommandInfo;
-import com.shoneworn.smartplug.data.DeviceBean;
-import com.shoneworn.smartplug.data.HomeTitleBean;
+import com.shoneworn.smartplug.bean.CommandInfo;
+import com.shoneworn.smartplug.bean.DeviceBean;
+import com.shoneworn.smartplug.bean.HomeTitleBean;
+import com.shoneworn.smartplug.bean.TitleBean;
 import com.shoneworn.smartplug.interfaces.HomeInterface;
+import com.shoneworn.smartplug.manager.DeviceManager;
 import com.shoneworn.smartplug.network.TcpClientConnector;
-import com.shoneworn.smartplug.utils.CombineCommand;
+import com.shoneworn.smartplug.command.CombineCommand;
 import com.shoneworn.smartplug.utils.Constants;
-import com.shoneworn.smartplug.utils.ReceiveCommand;
-import com.shoneworn.smartplug.utils.SendCommand;
-import com.shoneworn.smartplug.utils.UpdateAllData;
+import com.shoneworn.smartplug.command.ReceiveCommand;
+import com.shoneworn.smartplug.command.SendCommand;
+import com.shoneworn.smartplug.update.UpdateAllData;
+import com.shoneworn.smartplug.utils.WiFiState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +65,7 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
     private CommonListAdapter mAdapter;
     // 设备集合
     public List<DeviceBean> mlist = new ArrayList<>();
-    public static List<DeviceBean> mReturnList = null;
+
     public static List<DeviceBean> mCurrentList = new ArrayList<>();
     private HomeTitleBean titleBean;
     private boolean isStopGetData = false;
@@ -94,70 +93,34 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
     private TextView mNode6;
     private TextView mNode7;
     private TextView mTvNode;
+    private DeviceManager mDeviceManager = new DeviceManager();
+
+    /* 最近点击的设备 id ,用于更新繁忙状态 */
+    private int currentSelectedDeviceId = -1;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_nearby, null);
         sharedPreferences = getContext().getSharedPreferences("sp_config", Context.MODE_PRIVATE);
-
         NotifyManager.getNotifyManager().addObserver(this);
         commandInfo = new CommandInfo();
         sendCommand = new SendCommand();
         receiveCommand = new ReceiveCommand();
         new UpdateAllData();
         initView();
-        judgeWIFIState();
+        //判断当前WIFI的状态是否在开启的状态
+        WiFiState wiFiState = new WiFiState();
+        wiFiState.judgeWIFIState();
+        wiFiState.isWiFiActive();
         initData();
         waitData();
         return view;
     }
 
-    public static List<DeviceBean> getMlist() {
-        return mReturnList;
-    }
-
-    public void judgeWIFIState() {
-        Boolean wifiState = isWiFiActive();
-        if (!wifiState) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            final AlertDialog dialog = builder.create();
-            View dialogView = View.inflate(getContext(), R.layout.open_wifi, null);
-            dialog.setView(dialogView);
-            Button mBtnWiFiOk = (Button) dialogView.findViewById(R.id.wifi_ok);
-            mBtnWiFiOk.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent intent = new Intent(Settings.ACTION_AIRPLANE_MODE_SETTINGS);
-                    startActivity(intent);
-                    dialog.dismiss();
-                }
-            });
-            dialog.show();
-        }
-    }
-
-    //判断当前WIFI的状态是否在开启的状态
-    public boolean isWiFiActive() {
-        ConnectivityManager connectivity = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivity != null) {
-            NetworkInfo[] infos = connectivity.getAllNetworkInfo();
-            if (infos != null) {
-                for (NetworkInfo ni : infos) {
-                    if (ni.getTypeName().equals("WIFI") && ni.isConnected()) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
     private Boolean mPbWaitDate = false;
 
     public void waitData() {
-
         //每隔10秒向Server端请求一下当前在线的设备数量
         mHandler.post(new Runnable() {
             @Override
@@ -167,7 +130,6 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
                     return;
                 }
                 if (mPbWaitDate) return;
-
                 if (ONLINE_DEVICE == 0) {
                     mPbWait.setVisibility(View.VISIBLE);
                     mPbWaitDate = false;
@@ -179,51 +141,26 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
                 mHandler.postDelayed(this, 5 * 1000);
             }
         });
-
-    }
-
-    /**
-     * 初始化数据
-     */
-    private void initData() {
-
-        sendCommand.sendReadOnLineDevice();
-        receiveCommand.recevieServer();
-        mHandler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void dispatchMessage(Message msg) {
-                super.dispatchMessage(msg);
-                if (msg.what == 101) {
-                    titleBean = (HomeTitleBean) msg.getData().getSerializable("titlebean");
-                    mDesc.setText(String.format("total:%d, off:%d, on:%d, error:%d", titleBean.getTotal(), titleBean.getOn(), titleBean.getOff(), titleBean.getErr()));
-                }
-            }
-        };
     }
 
     public Boolean getStateStop = false;
-    public static int num = 1;
     public AlertDialog dialog;
 
     public void initView() {
         System.out.println("当前的ip:" + TCP_DOMIE);
         Button btIP = (Button) view.findViewById(R.id.bt_ip);
         mListView = (ListView) view.findViewById(R.id.lv_nearby);
-        mAdapter = new CommonListAdapter(getContext(), mlist, this);
         mDesc = (TextView) view.findViewById(R.id.tv_nearby_desc);
         mPbWait = (ProgressBar) view.findViewById(R.id.pb_wait);
-
         mListView.setOnItemClickListener(this);
+        mAdapter = new CommonListAdapter(getContext(), mDeviceManager.getDeviceBeanList(), this);
         mListView.setAdapter(mAdapter);
-
         btIP.setOnClickListener(new View.OnClickListener() {
-
             private EditText mEtText;
             private ImageButton mBtOK;
 
             @Override
             public void onClick(View view) {
-
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 dialog = builder.create();
                 View dialogView = View.inflate(getContext(), R.layout.update_ip, null);
@@ -243,7 +180,6 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
                 mTvTime.setOnClickListener(new myOnclickListener());
                 ImageButton mIbOk = (ImageButton) dialogView.findViewById(R.id.ib_schecule_ok);
                 mIbOk.setOnClickListener(new myOnclickListener());
-
                 mBtOK.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -254,7 +190,6 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
                             Toast.makeText(getActivity(), "IP地址输入有误！", Toast.LENGTH_SHORT).show();
                             return;
                         }
-
                         TcpClientConnector.getInstance().disconnect();
                         sharedPreferences.edit().putString("ip", mCurrentIP).apply();
                         TcpClientConnector.getInstance().creatConnect(mCurrentIP, Constants.TCP_PORT);
@@ -262,15 +197,32 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
                         dialog.dismiss();
                     }
                 });
-
                 dialog.show();  //必须show一下才能看到对话框，跟Toast一样的道理
             }
         });
 
     }
 
-    class myOnclickListener implements View.OnClickListener {
+    /**
+     * 初始化数据
+     */
+    private void initData() {
+        sendCommand.sendReadOnLineDevice();
+        receiveCommand.recevieServer();
+        mHandler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void dispatchMessage(Message msg) {
+                super.dispatchMessage(msg);
+                if (msg.what == 101) {
+                    titleBean = (HomeTitleBean) msg.getData().getSerializable("titlebean");
+                    mDesc.setText(String.format("total:%d, off:%d, on:%d, error:%d", titleBean.getTotal(), titleBean.getOn(), titleBean.getOff(), titleBean.getErr()));
+                }
+            }
+        };
+    }
 
+
+    class myOnclickListener implements View.OnClickListener {
         @Override
         public void onClick(View view) {
             switch (view.getId()) {
@@ -355,19 +307,13 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
                     break;
                 case R.id.bt_ok:
                     System.out.println("用户点击了OK键，但此处程序并不想回应用户，并向用户抛出了一个Exception!");
-
                 case R.id.ib_schecule_ok:
-
                     int mTime = Integer.parseInt(mTvTime.getText().toString());
                     int mTimeHex = mTime & 0xff;
-
                     SendCommand sendCommand = new SendCommand();
-
                     sendCommand.sendControlNode(mCurrentNode, mTimeHex);
-
                     dialog.dismiss();
                     break;
-
             }
         }
     }
@@ -375,7 +321,6 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
     private int mCurrentNode;
 
     class nodeClickListener implements View.OnClickListener {
-
         @Override
         public void onClick(View view) {
             switch (view.getId()) {
@@ -414,16 +359,16 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
         }
     }
 
-    /* */
+    /*更新条目 */
     public void updateDeviceItem() {
         long currentTime = System.currentTimeMillis() / 1000;
         cachelist = new ArrayList<>();
         //直接从Adapter中获取一个cdabInfoList，而这个数据是当前最新的数据
-        List<CDABInfo> cdabList = mAdapter.getCdabList();
-        int size = cdabList.size();
+        List<DeviceBean> deviceBeanList = mAdapter.getDeviceBeanList();
+        int size = deviceBeanList.size();
         for (int i = 0; i < size; i++) {
             //从当前最新的数据集合中获取其中的一个设备的信息
-            CDABInfo cdabInfo = mAdapter.getCdabList().get(i);
+            DeviceBean cdabInfo = deviceBeanList.get(i);
 
             if (currentTime - cdabInfo.getCreateTime() < 15) {
                 //从初始化的数据中拿取其中的一个数据
@@ -482,13 +427,9 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
         mDesc.setText(String.format("total:%d, on:%d, off:%d, error:%d", titleBean.getTotal(), titleBean.getOn(), titleBean.getOff(), titleBean.getErr()));
     }
 
-    public DeviceBean bean;
-    int on = 0;
-    int off = 0;
-    int err = 0;
+    public List<DeviceBean> deviceBeanList = new ArrayList<>();
+    //    public CDABInfo cdabInfo = new CDABInfo();
 
-    public List<CDABInfo> cdabInfoList = new ArrayList<>();
-//    public CDABInfo cdabInfo = new CDABInfo();
 
     //构建数据  模拟:向服务器端拉取数据  ONLINE_DEVICE:代表当前在线的设备
     private void createData() {
@@ -496,34 +437,15 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
         titleBean = new HomeTitleBean();
         titleBean.setTotal(ONLINE_DEVICE);
         mlist.clear();
-        bean = null;
-        for (int i = 0; i < ONLINE_DEVICE; i++) {
 
-            //需要记录当前每个Item创建的时间，因为一分钟之后没有CDAB自动更新的Item将会被清除掉
-            long createTime = System.currentTimeMillis() / 1000;
-            CDABInfo cdabInfo = new CDABInfo();
-            cdabInfo.setCreateTime(createTime);
-            cdabInfo.setPosition(i);
-            cdabInfoList.add(cdabInfo);
+        // 创建设备
+        mDeviceManager.createDeviceItems(ONLINE_DEVICE);
+        TitleBean titleBean = mDeviceManager.getTitleNum();
+        updateTittleState(titleBean.getOn(), titleBean.getOff(), titleBean.getErr());
 
-
-            // 初始化设备
-            bean = new DeviceBean();
-            bean.setDeviceId("" + i);
-            bean.setDevName("Device plug " + (i + 1));
-            bean.setOpen(false);
-            bean.setStatus(0);
-            mlist.add(bean);
-            off++;
-            updateTittleState(on, off, err);
-        }
-
-        mCurrentList.addAll(mlist);
-        mReturnList = mlist;
         // 更新数据
         mAdapter.notifyDataSetChanged();
-        mAdapter.setCdabList(cdabInfoList);
-
+        mAdapter.setDeviceBeanList(deviceBeanList);
 
         //每隔10秒刷新一下当前在线的设备数量
         mHandler.postDelayed(new Runnable() {
@@ -544,7 +466,6 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
         titleBean.setErr(err);
         titleBean.setTotal(mlist.size());
         Message msg = new Message();
-
         msg.what = 101;
         Bundle bun = new Bundle();
         bun.putSerializable("titlebean", titleBean);
@@ -555,7 +476,6 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
 
     @Override
     public void update(Observable observable, Object data) {
-
         if (data == null || !(data instanceof NotifyMsgEntity)) {
             return;
         }
@@ -573,45 +493,141 @@ public class NearbyFragment extends Fragment implements AdapterView.OnItemClickL
         } else if (Constants.NOTIFY_TO_ITEM == type) {
             command = (String) entity.getData();
             combineCommand = new CombineCommand();
-//            mHandler.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
             combineCommand.getCommand(command);
-//                }
-//            },1000);
-
         }
 
+
+        if (Constants.NOTIFY_TO_ONOFF == type) {
+            String parseData = (String) entity.getData();
+            if (parseData.length() == 8) {
+                //繁忙状态下的按钮
+                String busy = parseData.substring(0, 2);
+                if (busy.equals("01")) {
+                    //todo 这里由于 繁忙状态没有id 返回 ，所以使用了最近一次返回的id
+                    //繁忙状态需要更改
+                    mDeviceManager.updateDeviceStatusById(currentSelectedDeviceId, 2);
+                    mAdapter.notifyDataSetChanged();
+                }
+                //对下发应答命令1010进行判断
+            } else if (parseData.length() == 36) {
+                //只有在正常状态下记录在线时间，异常状态下的设备不记录
+                remaindOnLineTime(parseData);
+                System.out.println("对控制蓝牙开关的下发应答的指令:" + parseData);
+
+//                //第一点:收到正确应答再解锁
+//                if (correctResponse.equals("0000")) {
+//                    ToggleViewInfo pb = mToggleViewList.get(indexPosition);
+//                    pb.getmProgressBar().setVisibility(View.INVISIBLE);
+//                    pb.getToggleImageView().setVisibility(View.VISIBLE);
+//                    setToggleImg(indexPosition, state);
+//                }
+            }
+
+        } else if (Constants.NOTIFY_TO_TOGGLESTATE == type) {
+            String sendToggleState = (String) entity.getData();
+            updateToggleState(sendToggleState);
+        } else if (Constants.NOTIFY_TO_UPDATE_DATA == type) {
+            String parseData = (String) entity.getData();
+            remaindOnLineTime(parseData);
+        }
     }
+
+    public void updateToggleState(String sendToggleState) {
+        String[] str = sendToggleState.split("_");
+        String numFlash = str[0];
+        //获取到的ABCD命令中的设备编号,第一个设备编号:00
+        int num = Integer.parseInt(numFlash);
+        int index = 0;
+
+        //避免在二和四设备之间少三号设备的情况下，造成刷新错误的情况
+        DeviceBean dev;
+        //根据设备的名称进行刷新，防止因为设备掉线而出现该设备刷新成别的设备的状态
+        for (int i = 0; i < mlist.size(); i++) {
+            dev = mlist.get(i);
+            int deviceNum = dev.getDeviceId();
+            if (deviceNum == num) {
+                //因为实际
+                index = i;
+                break;
+            }
+        }
+
+        String toggleState = str[1];
+        int status = 0;
+        if (toggleState.equals("0100")) {
+            //开状态
+            status = 1;
+        } else if (toggleState.equals("0000")) {
+            //关状态
+            status = 0;
+        } else if (toggleState.equals("0200")) {
+            //异常状态
+            status = 2;
+        }
+        setToggleImg(index, status);
+    }
+
+    //记录每个设备没有CDAB需要更新设备的时间
+    public void remaindOnLineTime(String parseData) {
+        String preDeviceId = parseData.substring(0, 2);
+        String deviceId = "";
+        //todo 有一个坑，当是十个设备的时候，会出现一个问题
+        if (preDeviceId.contains("0")) {
+            deviceId = preDeviceId.substring(1, 2);
+        } else {
+            deviceId = preDeviceId;
+        }
+
+        String correctResponse = parseData.substring(4, 8);
+
+        mDeviceManager.updateDeviceTimeById(Integer.parseInt(deviceId));
+        //根据设备的id来查找当前设备在哪个Item的条目下
+        String state = "";
+        if (parseData.length() == 36) {
+            state = parseData.substring(12, 16);
+        } else if (parseData.length() == 32) {
+            state = parseData.substring(8, 12);
+        }
+        int status = -1;
+        if (state.equals("0100")) {
+            status = 1;
+        } else if (state.equals("0000")) {
+            status = 0;
+        } else if (state.equals("0200")) {
+            status = 2;
+        }
+        mDeviceManager.updateDeviceStatusById(Integer.parseInt(deviceId), status);
+
+        //第一点:收到正确应答再解锁
+        //ToDo:ProgressBar的显示与消失问题
+        if (correctResponse.equals("0000")) {
+            mDeviceManager.updateDeviceStatusById(Integer.parseInt(deviceId), status);
+//            ToggleViewInfo pb = mToggleViewList.get(deviceId);
+//            pb.getmProgressBar().setVisibility(View.INVISIBLE);
+//            pb.getToggleImageView().setVisibility(View.VISIBLE);
+//            setToggleImg(deviceId, state);
+        }
+
+
+        mAdapter.notifyDataSetChanged();
+    }
+
 
     //更新标题栏的各个数目
     public void updateTitleNum() {
-        on = 0;
-        off = 0;
-        err = 0;
-
-        for (int i = 0; i < mlist.size(); i++) {
-            bean = mlist.get(i);
-            if (bean.getStatus() == 0) {
-                on++;
-            } else if (bean.getStatus() == 1) {
-                off++;
-            } else if (bean.getStatus() == 2) {
-                err++;
-            }
-        }
-        updateTittleState(on, off, err);
+        TitleBean titleBean = mDeviceManager.getTitleNum();
+        updateTittleState(titleBean.getOn(), titleBean.getOff(), titleBean.getErr());
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         if (tcpClientConnector != null) {
-
             tcpClientConnector.disconnect();
         }
         mlist.clear();
         cachelist.clear();
         ONLINE_DEVICE = 0;
     }
+
 }

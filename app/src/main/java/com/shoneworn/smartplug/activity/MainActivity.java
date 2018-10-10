@@ -1,4 +1,4 @@
-package com.shoneworn.smartplug.View.activity;
+package com.shoneworn.smartplug.activity;
 
 /**
  * 主函数的入口，
@@ -16,7 +16,7 @@ import android.support.v4.view.ViewPager;
 import android.widget.RadioGroup;
 
 import com.shoneworn.smartplug.R;
-import com.shoneworn.smartplug.View.fragment.NearbyFragment;
+import com.shoneworn.smartplug.fragment.NearbyFragment;
 import com.shoneworn.smartplug.adapter.HomePagerAdapter;
 import com.shoneworn.smartplug.network.TcpClientConnector;
 import com.shoneworn.smartplug.utils.Constants;

@@ -1,4 +1,4 @@
-package com.shoneworn.smartplug.utils;
+package com.shoneworn.smartplug.command;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.ailin.shoneworn.mylibrary.NotifyManager;
 import com.ailin.shoneworn.mylibrary.NotifyMsgEntity;
+import com.shoneworn.smartplug.utils.Constants;
 
 /**
  * =============================================================

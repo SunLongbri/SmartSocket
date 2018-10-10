@@ -1,4 +1,4 @@
-package com.shoneworn.smartplug.utils;
+package com.shoneworn.smartplug.command;
 
 
 import android.content.SharedPreferences;

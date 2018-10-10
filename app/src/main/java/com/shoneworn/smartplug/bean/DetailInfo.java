@@ -1,4 +1,4 @@
-package com.shoneworn.smartplug.data;
+package com.shoneworn.smartplug.bean;
 
 /**
  * Created by Administrator on 2018/9/1.
@@ -14,6 +14,7 @@ public class DetailInfo {
     private String mDetailTemperature;
     private int mRemainTime;
     private int mPageIndex;
+
 
     public int getmPageIndex() {
         return mPageIndex;

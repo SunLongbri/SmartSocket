@@ -1,4 +1,4 @@
-package com.shoneworn.smartplug.data;
+package com.shoneworn.smartplug.bean;
 
 import android.widget.TextView;
 

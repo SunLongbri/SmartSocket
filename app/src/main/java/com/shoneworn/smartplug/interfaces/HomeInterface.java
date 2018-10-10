@@ -5,7 +5,5 @@ package com.shoneworn.smartplug.interfaces;
  */
 
 public interface HomeInterface {
-
    void onSwich(boolean boo);
-
 }
