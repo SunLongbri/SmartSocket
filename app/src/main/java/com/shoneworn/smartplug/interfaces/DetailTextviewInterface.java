@@ -1,6 +1,6 @@
 package com.shoneworn.smartplug.interfaces;
 
-import com.shoneworn.smartplug.bean.DetailTextView;
+import com.shoneworn.smartplug.data.DetailTextView;
 
 /**
  * =============================================================
